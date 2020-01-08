@@ -1,0 +1,56 @@
+version: "3.1"
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: ./docker-config/nginx/Dockerfile
+    ports:
+      - 80:80
+    container_name: ${PROJECT_NAME}--craft--nginx
+    volumes:
+      - cpresources-data:/var/www/html/web/cpresources
+      - ./craft/web:/var/www/html/web
+
+  php:
+    build:
+      context: .
+      dockerfile: ./docker-config/php/Dockerfile
+    expose:
+      - 9000
+    environment:
+      ENVIRONMENT: dev
+      DB_DRIVER: mysql
+      DB_SERVER: database
+      DB_USER: root
+      DB_PASSWORD: ${SQL_PASSWORD}
+      DB_DATABASE: craft_${PROJECT_NAME}
+      DB_SCHEMA: public
+      SITE_URL: http://localhost
+      SECURITY_KEY: ${CRAFT_SECURITY_KEY}
+    container_name: ${PROJECT_NAME}--craft--php
+    volumes:
+      - cpresources-data:/var/www/html/web/cpresources
+      - ./craft/composer.json:/var/www/html/composer.json
+      - ./craft/composer.lock:/var/www/html/composer.lock
+      - ./craft/config:/var/www/html/config
+      - ./craft/modules:/var/www/html/modules
+      - ./craft/templates:/var/www/html/templates
+      - ./craft/web:/var/www/html/web
+
+  database:
+    image: mariadb:10.3
+    volumes:
+      - db-data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ${SQL_PASSWORD}
+      MYSQL_DATABASE: craft_${PROJECT_NAME}
+      MYSQL_USER: ${PROJECT_NAME}
+      MYSQL_PASSWORD: ${SQL_PASSWORD}
+      MYSQL_ROOT_HOST: "%"
+    container_name: ${PROJECT_NAME}--craft--db
+
+volumes:
+  db-data:
+  cpresources-data:

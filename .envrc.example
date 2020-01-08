@@ -1,0 +1,4 @@
+export SQL_USERNAME=
+export SQL_PASSWORD=
+export PROJECT_NAME=
+export CRAFT_SECURITY_KEY=
